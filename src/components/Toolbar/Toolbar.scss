@@ -1,0 +1,41 @@
+div.popover {
+	// width: 10rem;
+	width: 10rem;
+	overflow: hidden;
+	p {
+		margin: 0.1rem;
+		margin-top: 0.5rem;
+		text-align: center;
+	}
+	.MuiSlider-root {
+		width: 8rem;
+		margin: 0.8rem;
+		margin-bottom: 0.2rem;
+	}
+}
+
+div.stroke-circle-wrapper {
+	background-color: gray;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	div.stroke-circle {
+		border-radius: 50%;
+		background-color: black;
+	}
+}
+
+button.circle {
+	display: inline-block;
+	padding: 0px;
+	width: 2rem !important;
+	min-width: 0px;
+	height: 2rem !important;
+	border-radius: 50%;
+	border-radius: 50%;
+	border-color: black;
+	border-width: 2px;
+	border-style: solid;
+	margin: 0.5rem;
+}
