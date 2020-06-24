@@ -30,13 +30,15 @@ interface RoomList {
 
 const rooms: RoomList = {};
 
-const checkJwt = jwt({
-	secret: jwks.expressJwtSecret({
+const secret = jwks.expressJwtSecret({
 		cache: true,
 		rateLimit: true,
 		jwksRequestsPerMinute: 5,
 		jwksUri: `https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`
-	}),
+	});
+
+const checkJwt = jwt({
+	secret,
 	audience: process.env.AUTH0_CLIENT_ID,
 	issuer: `https://${process.env.AUTH0_DOMAIN}/`,
 	algorithms: ['RS256']
@@ -137,6 +139,6 @@ if (process.argv.indexOf("--folder") >= 0) {
 
 const server = app.listen(8080, () => console.log("listening"));
 
-setupGame(server, [""])
+setupGame(server, secret)
 
 // http.createServer(http).listen(8080, () => console.log("Started"))

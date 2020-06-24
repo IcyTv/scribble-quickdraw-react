@@ -1,0 +1,29 @@
+$message-container-width: 20vw;
+
+div.message-list-container {
+	width: $message-container-width;
+	text-align: center;
+	div.msg {
+		border-style: solid;
+		border-radius: 2px;
+		border-color: black;
+		margin: 1rem;
+		p {
+			margin: 0.1rem;
+			word-break: break-all;
+		}
+	}
+}
+
+form.msg-input {
+	display: flex;
+	position: absolute;
+	bottom: 0;
+	input[name='msg'] {
+		width: 80%;
+	}
+}
+
+body {
+	width: calc(100vw - #{$message-container-width}) !important;
+}
