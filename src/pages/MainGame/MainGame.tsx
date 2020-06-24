@@ -1,17 +1,17 @@
 /* eslint-disable no-restricted-syntax */
 import p5Instance from 'p5';
 import { parse } from 'query-string';
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Sketch from 'react-p5';
+import { useStore } from 'react-redux';
 import { useLocation } from 'react-router';
 import simplify from 'simplify-js';
 import socketIO from 'socket.io-client';
-import { useStore } from 'react-redux';
+import ChatList from '../../components/ChatList/ChatList';
 import Toolbar from '../../components/Toolbar';
 import { intersects } from '../../utils';
 import { useAuth0 } from '../../utils/auth0Hooks';
 import './MainGame.scss';
-import ChatList from '../../components/ChatList/ChatList';
 
 interface Line {
 	points: {
@@ -57,6 +57,12 @@ const MainGame: React.FC = () => {
 			}),
 		[roomNr],
 	);
+
+	const isFirefox = typeof (window as any).InstallTrigger !== 'undefined';
+
+	if (isFirefox) {
+		console.log('Running firefox workaround');
+	}
 
 	useEffect(() => {
 		store.dispatch({ type: 'ROOM_FETCH_REQUEST', payload: { room: roomNr, auth0 } });
@@ -192,7 +198,11 @@ const MainGame: React.FC = () => {
 	return (
 		<div className="main-game">
 			<ChatList socket={socket} uid={userId} />
-			<Sketch setup={setup} draw={draw} touchStarted={touchStarted} touchMoved={touchMoved} windowResized={resized} touchEnded={touchEnded} />
+			{!isFirefox ? (
+				<Sketch setup={setup} draw={draw} touchStarted={touchStarted} touchMoved={touchMoved} windowResized={resized} touchEnded={touchEnded} />
+			) : (
+				<Sketch setup={setup} draw={draw} mousePressed={touchStarted} mouseDragged={touchMoved} windowResized={resized} mouseReleased={touchEnded} />
+			)}
 			<Toolbar
 				currentlyActive={currentColor}
 				colors={['white', 'black', 'green', 'red', 'blue', 'yellow']}

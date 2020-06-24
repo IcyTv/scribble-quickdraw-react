@@ -22,6 +22,8 @@ form.msg-input {
 	input[name='msg'] {
 		width: 80%;
 	}
+	overflow: hidden;
+	margin-bottom: 1rem;
 }
 
 body {
