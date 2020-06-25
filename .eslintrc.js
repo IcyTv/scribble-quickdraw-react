@@ -4,4 +4,7 @@ module.exports = {
 	env: {
 		jest: true,
 	},
+	rules: {
+		'no-plusplus': ['error', { allowForLoopAfterthoughts: true }],
+	},
 };

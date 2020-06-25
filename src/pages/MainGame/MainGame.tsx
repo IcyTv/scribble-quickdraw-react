@@ -12,7 +12,15 @@ import Toolbar from '../../components/Toolbar';
 import { intersects } from '../../utils';
 import { useAuth0 } from '../../utils/auth0Hooks';
 import './MainGame.scss';
+import Timer from '../../components/Timer';
+import WordSelection from '../../components/WordSelection/WordSelection';
 
+interface User {
+	id: string;
+	name: string;
+	picture: string;
+	points: number;
+}
 interface Line {
 	points: {
 		x: number;
@@ -23,7 +31,7 @@ interface Line {
 	strokeWeight?: number;
 }
 
-const lines: Line[] = [];
+let lines: Line[] = [];
 
 let last: [number, number];
 
@@ -39,12 +47,16 @@ const MainGame: React.FC = () => {
 	const [currentColor, setCurrentColor] = useState('white');
 	const [isPopover, setIsPopover] = useState(false);
 	const [strokeWidth, setStrokeWidth] = useState(4);
+	const [currentPlayer, setCurrentPlayer] = useState('');
+	const [initialTime, setInitialTime] = useState(0);
+	const [users, setUsers] = useState<User[]>([]);
+	const [word, setWord] = useState('');
 	const location = useLocation();
 	const auth0 = useAuth0();
-	const store = useStore();
 
 	const userId = useMemo(() => auth0.user.sub, [auth0.user]);
 	const userName = useMemo(() => auth0.user.nickname, [auth0.user]);
+	const picture = useMemo(() => auth0.user.picture, [auth0]);
 
 	const roomNr = useMemo(() => parse(location.search).roomNr, [location.search]);
 
@@ -64,10 +76,6 @@ const MainGame: React.FC = () => {
 		console.log('Running firefox workaround');
 	}
 
-	useEffect(() => {
-		store.dispatch({ type: 'ROOM_FETCH_REQUEST', payload: { room: roomNr, auth0 } });
-	});
-
 	let drawInterv: NodeJS.Timeout;
 	const buffer: { x: number; y: number }[] = [];
 
@@ -80,11 +88,19 @@ const MainGame: React.FC = () => {
 		socket.on('authenticated', () => {
 			console.log('Authed');
 		});
-		socket.on('new_user', (user: unknown) => {
-			console.log(user);
+
+		socket.on('initialize', (data: { lines: Line[]; currentPlayer: string; time: number; users: any }) => {
+			console.log('users', data.users);
+			lines = data.lines;
+			setCurrentPlayer(data.currentPlayer);
+			setInitialTime(data.time);
+			setUsers(data.users);
+			setWord('');
+			socket.emit('request_wordlist');
 		});
 
 		socket.on('draw_start', (ev: { currentPlayer: string } & Line) => {
+			// Probably unnecessary
 			if (ev.currentPlayer !== userId) {
 				lines.push({
 					...ev,
@@ -115,13 +131,12 @@ const MainGame: React.FC = () => {
 		socket.on('delete_all', () => {
 			lines.splice(0, lines.length);
 		});
-
-		socket.on('user_disconnect', () => {
-			console.log('User disconnected');
-		});
 	}, [auth0.getIdTokenClaims, socket, userId]);
 
 	const touchStarted = (p5: p5Instance) => {
+		if (currentPlayer !== userId) {
+			return;
+		}
 		if (!isPopover && currentColor !== 'magic-eraser') {
 			lines.push({ points: [{ x: p5.mouseX, y: p5.mouseY }], color: currentColor, strokeWeight: strokeWidth, originalSize: p5.width });
 			socket.emit('draw_start', { points: [{ x: p5.mouseX, y: p5.mouseY }], color: currentColor, strokeWeight: strokeWidth, originalSize: p5.width });
@@ -140,16 +155,17 @@ const MainGame: React.FC = () => {
 		const width = body?.clientWidth || p5.windowWidth;
 		const height = body?.clientHeight || p5.windowHeight;
 		const vMin = Math.min(width, height);
-		console.log(width, height, vMin);
 		p5.createCanvas(vMin, vMin);
 	};
 
 	const touchMoved = (p5: p5Instance) => {
+		if (currentPlayer !== userId) {
+			return;
+		}
 		if (!isPopover && currentColor !== 'magic-eraser') {
 			lines[lines.length - 1].points.push({ x: p5.mouseX, y: p5.mouseY });
 			buffer.push({ x: p5.mouseX, y: p5.mouseY });
 		} else if (currentColor === 'magic-eraser' && last) {
-			// eslint-disable-next-line no-plusplus
 			for (let i = 0; i < lines.length; i++) {
 				const l = lines[i];
 				if (intersects(l.points, last[0], last[1], p5.mouseX, p5.mouseY)) {
@@ -162,6 +178,9 @@ const MainGame: React.FC = () => {
 	};
 
 	const touchEnded = () => {
+		if (currentPlayer !== userId) {
+			return;
+		}
 		if (!isPopover && currentColor !== 'magic-eraser') {
 			const line = lines[lines.length - 1].points;
 			const simplified = simplify(line);
@@ -177,6 +196,11 @@ const MainGame: React.FC = () => {
 	const draw = useMemo(
 		() => (p5: p5Instance) => {
 			p5.background('#333333');
+			p5.fill(255);
+			p5.strokeWeight(1);
+			p5.textSize(20);
+			p5.textAlign(p5.CENTER);
+			p5.text(word, p5.width / 2, 20);
 			p5.noFill();
 			for (const f of lines) {
 				p5.stroke(f.color !== 'eraser' ? f.color || 'white' : '#333333');
@@ -192,12 +216,19 @@ const MainGame: React.FC = () => {
 				p5.scale(f.originalSize / p5.width);
 			}
 		},
-		[],
+		[word],
 	);
+
+	const onWordSelect = (w: string) => {
+		lines = [];
+		setWord(w);
+	};
 
 	return (
 		<div className="main-game">
-			<ChatList socket={socket} uid={userId} />
+			<ChatList socket={socket} user={{ id: userId, name: userName, picture, points: 0 }} defUsers={users} />
+			<Timer socket={socket} initialTime={initialTime} />
+			<WordSelection socket={socket} onWordSelect={onWordSelect} defWord={word} />
 			{!isFirefox ? (
 				<Sketch setup={setup} draw={draw} touchStarted={touchStarted} touchMoved={touchMoved} windowResized={resized} touchEnded={touchEnded} />
 			) : (
@@ -215,6 +246,7 @@ const MainGame: React.FC = () => {
 					lines.splice(0, lines.length);
 					socket.emit('delete_all');
 				}}
+				disabled={currentPlayer !== userId}
 			/>
 		</div>
 	);

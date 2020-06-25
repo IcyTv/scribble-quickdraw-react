@@ -1,0 +1,13 @@
+div.timer {
+	position: absolute;
+	top: 5rem;
+	text-align: center;
+	color: white;
+	z-index: 1000;
+	font-size: 2rem;
+	width: 100vmin;
+	-webkit-user-select: none; /* Safari */
+	-moz-user-select: none; /* Firefox */
+	-ms-user-select: none; /* IE10+/Edge */
+	user-select: none; /* Standard */
+}

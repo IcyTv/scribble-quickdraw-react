@@ -13,6 +13,7 @@ interface ToolbarProps {
 	onStrokeWidthChanged: (strokeWidth: number) => void;
 	initialStrokeWidth?: number;
 	onDeleteAll?: () => void;
+	disabled?: boolean;
 }
 
 const CustomToolbar: React.FC<ToolbarProps> = ({
@@ -23,6 +24,7 @@ const CustomToolbar: React.FC<ToolbarProps> = ({
 	onStrokeWidthChanged,
 	initialStrokeWidth,
 	onDeleteAll,
+	disabled,
 }: ToolbarProps) => {
 	const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 	const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
@@ -51,32 +53,33 @@ const CustomToolbar: React.FC<ToolbarProps> = ({
 						onClick={onChangeWrapper(v)}
 						key={`color-${v}`}
 						style={{ backgroundColor: v, borderColor: v === currentlyActive ? 'blue' : 'black', opacity: v === currentlyActive ? '100%' : '70%' }}
+						disabled={disabled}
 					/>
 				);
 			})}
-			<IconButton onClick={() => setIsColorPickerOpen(!isColorPickerOpen)} ref={(ref) => setColorPickerRef(ref!)}>
+			<IconButton onClick={() => setIsColorPickerOpen(!isColorPickerOpen)} ref={(ref) => setColorPickerRef(ref!)} disabled={disabled}>
 				<FaEyeDropper />
 			</IconButton>
 			<div style={{ marginLeft: 'auto' }}>
-				<Button onClick={() => setIsPopoverOpen(!isPopoverOpen)} ref={(ref) => setStrokeRef(ref!)}>
+				<Button onClick={() => setIsPopoverOpen(!isPopoverOpen)} ref={(ref) => setStrokeRef(ref!)} disabled={disabled}>
 					<div className="stroke-circle-wrapper" style={{ width: '2rem', height: '2rem' }}>
 						<div className="stroke-circle" style={{ width: `${swcSize}rem`, height: `${swcSize}rem` }} />
 					</div>
 				</Button>
-				<IconButton onClick={onChangeWrapper('eraser')}>
+				<IconButton onClick={onChangeWrapper('eraser')} disabled={disabled}>
 					<FaEraser color={currentlyActive === 'eraser' ? 'black' : 'gray'} />
 				</IconButton>
-				<IconButton onClick={onChangeWrapper('magic-eraser')}>
+				<IconButton onClick={onChangeWrapper('magic-eraser')} disabled={disabled}>
 					<FaMagic color={currentlyActive === 'magic-eraser' ? 'black' : 'gray'} />
 				</IconButton>
 				{onDeleteAll && (
-					<IconButton onClick={() => onDeleteAll()}>
+					<IconButton onClick={() => onDeleteAll()} disabled={disabled}>
 						<FaTrash color="red" />
 					</IconButton>
 				)}
 			</div>
 			<Popover
-				open={isPopoverOpen}
+				open={isPopoverOpen && !disabled}
 				anchorOrigin={{
 					vertical: 'bottom',
 					horizontal: 'center',

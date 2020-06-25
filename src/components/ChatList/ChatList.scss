@@ -15,6 +15,20 @@ div.message-list-container {
 	}
 }
 
+div.user-list-container {
+	width: $message-container-width;
+	display: flex;
+	div.av {
+		display: flex;
+		flex-direction: column;
+		text-align: center;
+		p {
+			margin: 0px;
+			padding: 1px;
+		}
+	}
+}
+
 form.msg-input {
 	display: flex;
 	position: absolute;
