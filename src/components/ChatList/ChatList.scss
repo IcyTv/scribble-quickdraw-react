@@ -39,7 +39,3 @@ form.msg-input {
 	overflow: hidden;
 	margin-bottom: 1rem;
 }
-
-body {
-	width: calc(100vw - #{$message-container-width}) !important;
-}

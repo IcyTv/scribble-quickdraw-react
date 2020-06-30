@@ -20,5 +20,44 @@ div.room-page {
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		flex-direction: column;
+
+		p {
+			background-color: darkgray;
+			color: black;
+			cursor: pointer;
+		}
+
+		button {
+			background-color: black;
+			color: white;
+		}
+	}
+
+	.grid-item {
+		display: flex;
+		flex-direction: row;
+
+		border-color: black;
+		border-style: solid;
+		border-width: 1px;
+
+		p {
+			margin: 0px;
+			margin-top: auto;
+			margin-bottom: auto;
+		}
+	}
+
+	.wordlist-container {
+		margin-top: 2rem;
+		margin-bottom: 2rem;
+	}
+
+	form {
+		.add-word-error-label {
+			color: red;
+			margin-top: 0.5rem;
+		}
 	}
 }

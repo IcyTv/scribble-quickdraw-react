@@ -1,19 +1,19 @@
+/* eslint-disable @typescript-eslint/camelcase */
 /* eslint-disable no-restricted-syntax */
 import p5Instance from 'p5';
 import { parse } from 'query-string';
 import React, { useEffect, useMemo, useState } from 'react';
 import Sketch from 'react-p5';
-import { useStore } from 'react-redux';
-import { useLocation } from 'react-router';
+import { useLocation, Redirect } from 'react-router';
 import simplify from 'simplify-js';
 import socketIO from 'socket.io-client';
 import ChatList from '../../components/ChatList/ChatList';
+import Timer from '../../components/Timer';
 import Toolbar from '../../components/Toolbar';
+import WordSelection from '../../components/WordSelection/WordSelection';
 import { intersects } from '../../utils';
 import { useAuth0 } from '../../utils/auth0Hooks';
 import './MainGame.scss';
-import Timer from '../../components/Timer';
-import WordSelection from '../../components/WordSelection/WordSelection';
 
 interface User {
 	id: string;
@@ -51,6 +51,7 @@ const MainGame: React.FC = () => {
 	const [initialTime, setInitialTime] = useState(0);
 	const [users, setUsers] = useState<User[]>([]);
 	const [word, setWord] = useState('');
+	const [redirectTo, setRedirectTo] = useState<string>();
 	const location = useLocation();
 	const auth0 = useAuth0();
 
@@ -58,23 +59,25 @@ const MainGame: React.FC = () => {
 	const userName = useMemo(() => auth0.user.nickname, [auth0.user]);
 	const picture = useMemo(() => auth0.user.picture, [auth0]);
 
-	const roomNr = useMemo(() => parse(location.search).roomNr, [location.search]);
+	const roomId = useMemo(() => parse(location.search).id, [location.search]);
 
 	const socket = useMemo(
 		() =>
-			socketIO({
+			socketIO('/games', {
 				query: {
-					roomNr,
+					roomId,
 				},
 			}),
-		[roomNr],
+		[roomId],
 	);
 
-	const isFirefox = typeof (window as any).InstallTrigger !== 'undefined';
+	const isFirefox = typeof ((window as unknown) as { InstallTrigger: unknown }).InstallTrigger !== 'undefined';
 
-	if (isFirefox) {
-		console.log('Running firefox workaround');
-	}
+	useEffect(() => {
+		if (isFirefox) {
+			console.log('Running firefox workaround');
+		}
+	});
 
 	let drawInterv: NodeJS.Timeout;
 	const buffer: { x: number; y: number }[] = [];
@@ -89,11 +92,12 @@ const MainGame: React.FC = () => {
 			console.log('Authed');
 		});
 
-		socket.on('initialize', (data: { lines: Line[]; currentPlayer: string; time: number; users: any }) => {
+		socket.on('initialize', (data: { lines: Line[]; currentPlayer: string; time: number; users: User[] }) => {
 			console.log('users', data.users);
 			lines = data.lines;
 			setCurrentPlayer(data.currentPlayer);
 			setInitialTime(data.time);
+			console.log('Time', data.time);
 			setUsers(data.users);
 			setWord('');
 			socket.emit('request_wordlist');
@@ -130,6 +134,14 @@ const MainGame: React.FC = () => {
 
 		socket.on('delete_all', () => {
 			lines.splice(0, lines.length);
+		});
+
+		socket.on('redirect_room', (rid?: string) => {
+			if (rid) {
+				setRedirectTo('/room');
+			} else {
+				setRedirectTo(`/room?id=${rid}`);
+			}
 		});
 	}, [auth0.getIdTokenClaims, socket, userId]);
 
@@ -197,10 +209,12 @@ const MainGame: React.FC = () => {
 		() => (p5: p5Instance) => {
 			p5.background('#333333');
 			p5.fill(255);
-			p5.strokeWeight(1);
-			p5.textSize(20);
-			p5.textAlign(p5.CENTER);
-			p5.text(word, p5.width / 2, 20);
+			if (word) {
+				p5.noStroke();
+				p5.textSize(20);
+				p5.textAlign(p5.CENTER);
+				p5.text(word.toUpperCase(), p5.width / 2, 20);
+			}
 			p5.noFill();
 			for (const f of lines) {
 				p5.stroke(f.color !== 'eraser' ? f.color || 'white' : '#333333');
@@ -223,6 +237,10 @@ const MainGame: React.FC = () => {
 		lines = [];
 		setWord(w);
 	};
+
+	if (redirectTo) {
+		return <Redirect to={redirectTo} />;
+	}
 
 	return (
 		<div className="main-game">
