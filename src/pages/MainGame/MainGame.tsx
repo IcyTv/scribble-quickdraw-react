@@ -88,16 +88,11 @@ const MainGame: React.FC = () => {
 			// eslint-disable-next-line no-underscore-dangle
 			socket.emit('authenticate', { token: id_token.__raw });
 		});
-		socket.on('authenticated', () => {
-			console.log('Authed');
-		});
 
 		socket.on('initialize', (data: { lines: Line[]; currentPlayer: string; time: number; users: User[] }) => {
-			console.log('users', data.users);
 			lines = data.lines;
 			setCurrentPlayer(data.currentPlayer);
 			setInitialTime(data.time);
-			console.log('Time', data.time);
 			setUsers(data.users);
 			setWord('');
 			socket.emit('request_wordlist');

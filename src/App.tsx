@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import React from 'react';
 import './App.css';
 import Auth0Provider from './components/Auth0Provider';

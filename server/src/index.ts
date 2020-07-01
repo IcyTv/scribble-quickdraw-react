@@ -3,20 +3,17 @@
 import express from 'express';
 import helmet from 'helmet';
 import jwt from 'express-jwt';
-import dotenv from 'dotenv';
 import cors from 'cors'; // Development
 import bodyParser from 'body-parser';
 import pino from 'express-pino-logger';
 import SocketIO from 'socket.io';
 import errorhandler from 'errorhandler';
 import http from 'http';
+import { secret } from './constants'; // Import first to load dotenv
 import { setupGame } from './gameHandler';
 import setupRooms from './roomHandler';
 import setupAPI from './api';
 import setupStatics from './statics';
-import { secret } from './constants';
-
-dotenv.config();
 
 const checkJwt = jwt({
 	secret,

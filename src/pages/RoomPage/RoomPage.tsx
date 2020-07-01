@@ -72,7 +72,7 @@ const RoomPage: React.FC = () => {
 
 			// Doing this, because maybe later store preferred times/wordlists etc...
 			socket.emit('set_wordlist', w.wordlist);
-			// socket.emit('set_time', t.defaultTime);
+			// socket.emit('set_time', t.defaultTime); // But sending this sets the time to 40 minutes!
 		});
 	}, [auth0, isAdmin, socket]);
 
@@ -126,6 +126,9 @@ const RoomPage: React.FC = () => {
 				wl.push(word);
 				return [...wl];
 			});
+		});
+		socket.on('set_time', (t: number) => {
+			setDefaultTime(t);
 		});
 		socket.on('set_players', (players: User[]) => {
 			console.log('set_players', players);
@@ -238,7 +241,10 @@ const RoomPage: React.FC = () => {
 				</form>
 			</div>
 		) : (
-			grid
+			<>
+				{defaultTime && <p>Time to draw {defaultTime}s</p>}
+				{grid}
+			</>
 		);
 
 	return (
@@ -249,7 +255,7 @@ const RoomPage: React.FC = () => {
 					return (
 						<ListItem key={`user-${v.name}`}>
 							<ListItemAvatar>
-								<Avatar src={v.picture} alt="User" imgProps={{ referrerPolicy: 'no-referrer' }} />
+								<Avatar src={v.picture} alt={v.name} imgProps={{ referrerPolicy: 'no-referrer' }} />
 							</ListItemAvatar>
 							<p>{v.name}</p>
 						</ListItem>

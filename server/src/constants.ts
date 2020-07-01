@@ -1,6 +1,15 @@
 /* eslint-disable import/prefer-default-export */
 import jwks from 'jwks-rsa';
+import dotenv from 'dotenv';
 import { getWordlistFromFile } from './utils';
+
+const result = dotenv.config();
+
+if (result.error) {
+	throw result.error;
+}
+
+console.log(result.parsed, process.env);
 
 export interface User {
 	id: string;

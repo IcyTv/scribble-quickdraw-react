@@ -102,6 +102,7 @@ export default (app: SocketIO.Server, secret: unknown): void => {
 		socket.on('set_time', (ev: number) => {
 			console.log(`Setting time to ${ev}`);
 			setTime(roomId, ev * 1000);
+			socket.broadcast.emit('set_time', ev);
 		});
 
 		socket.on('disconnect', () => {
