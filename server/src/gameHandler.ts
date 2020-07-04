@@ -60,6 +60,7 @@ export const setupGame = (app: SocketIO.Server, secret: any): void => {
 		socket.broadcast.to(room).emit('new_user', userData);
 
 		if (!games[userData.roomNr]) {
+			console.log('Room does not exist, redirecting');
 			socket.emit('redirect_room', userData.roomNr);
 			socket.disconnect();
 			return;
