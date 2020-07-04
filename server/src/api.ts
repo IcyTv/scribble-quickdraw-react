@@ -77,6 +77,12 @@ export default (app: Express, checkJwt: jwt.RequestHandler): void => {
 		const { roomId } = req.query;
 		if (!roomId) {
 			res.status(400).end('No roomId specified');
+			return;
+		}
+
+		if (!games[roomId as string]) {
+			res.status(400).end('Room does not exist');
+			return;
 		}
 
 		const { admin } = games[roomId as string];

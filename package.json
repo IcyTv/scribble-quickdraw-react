@@ -38,7 +38,7 @@
 	},
 	"scripts": {
 		"start:client": "yarn --silent react-app-rewired start",
-		"build": "react-app-rewired build",
+		"build:client": "react-app-rewired build",
 		"test": "react-app-rewired test --env=jest-environment-jsdom-sixteen",
 		"eject": "react-scripts eject",
 		"postinstall": "patch-package",
@@ -46,7 +46,7 @@
 		"start:server": "node-env-run server --exec nodemon | pino-colada",
 		"start:dev": "run-p -l -n start:server start:client",
 		"build:server": "tsc -p server",
-		"build:all": "run-p -l -n build build:server",
+		"build:all": "run-p -l -n build:client build:server",
 		"start:prod": "node server/lib --folder ./build | pino-colada"
 	},
 	"browserslist": {
