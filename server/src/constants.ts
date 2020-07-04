@@ -9,8 +9,6 @@ if (result.error) {
 	throw result.error;
 }
 
-console.log(result.parsed, process.env);
-
 export interface User {
 	id: string;
 	name: string;
@@ -62,4 +60,4 @@ export const games: { [roomId: string]: Game } = {};
 export const DEFAULT_WORDLIST = getWordlistFromFile();
 
 export const DEFAULT_TIME = 60000;
-export const DEFAULT_TIMEOUT = 1500;
+export const DEFAULT_TIMEOUT = 5000;

@@ -2,7 +2,7 @@
 import socketioJWT from '@ssnxd/socketio-jwt';
 import SocketIO from 'socket.io';
 import { v4 as uuid } from 'uuid';
-import { games, User, IdToken } from './constants';
+import { games, User, IdToken, DEFAULT_TIMEOUT } from './constants';
 import { addRoom, deleteIfEmpty, removePlayer, setStarted, changeWordlist, addToWordlist, removeFromWordlist, setTime, addPlayer, handleErrors } from './utils';
 
 const generateRoomId = (admin: User): string => {
@@ -108,9 +108,11 @@ export default (app: SocketIO.Server, secret: unknown): void => {
 		socket.on('disconnect', () => {
 			disconnectTimeout = setTimeout(() => {
 				console.log('User disconnected from rooms');
-				removePlayer(roomId, user.sub);
-				deleteIfEmpty(roomId);
-			}, 1500);
+				if (!games[roomId].started) {
+					removePlayer(roomId, user.sub);
+					deleteIfEmpty(roomId);
+				}
+			}, DEFAULT_TIMEOUT);
 		});
 		socket.on('reconnect', () => {
 			clearTimeout(disconnectTimeout);
