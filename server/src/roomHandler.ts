@@ -50,7 +50,7 @@ export default (app: SocketIO.Server, secret: unknown): void => {
 			console.log('New Room', roomId);
 			socket.emit('room_id', roomId);
 		} else if (Object.keys(games).indexOf(roomId) < 0) {
-			socket.emit('error', { msg: 'invalid room!' });
+			socket.emit('err', { msg: 'invalid room!' });
 			socket.disconnect();
 			return;
 		}
